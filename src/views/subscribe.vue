@@ -119,9 +119,8 @@ export default {
         if(that.details[i].is_show && !that.theme.includes(i)){
           that.details[i].data = [];
           that.details[i].is_show = false;
-          if(that.activeNames.includes(i)){
-            var index = that.activeNames.indexOf(i);
-            that.activeNames.splice(index,1);
+          if(that.activeNames === i){
+            that.activeNames = [];
           }
         }
       }
@@ -152,7 +151,13 @@ export default {
     },
     handleClick_draw(index){           //生成图像
       var that = this;
-      that.details[index].show_chart = !that.details[index].show_chart;
+      that.details[index].show_chart = !that.details[index].show_chart;     //显示图像/隐藏图像切换
+
+      for(var i=0; i<3; i++){           //确保一次只有一个子面板生成图像
+        if(index != i){
+          that.details[i].show_chart = false;
+        }
+      }
       
       if(that.details[index].show_chart){
         that.$nextTick(() => {
