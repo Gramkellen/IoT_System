@@ -61,6 +61,14 @@ export default {
     }
   },
   methods: {
+    disabledDate(time) {
+      var that = this;
+      var item = that.details[that.activeNames];
+
+      var enable_times = item.chart.options.map(date => new Date(date).getTime());
+      return !enable_times.includes(time.getTime());
+      //return time.getTime() > Date.now();
+    },
     dataProcessing(item){
       // 获取对象的键，并按时间排序
       var labels = Object.keys(item).sort();
@@ -173,14 +181,8 @@ export default {
       for(var i = 0; i < item.data.length; i++){
         dates.push(item.data[i].time);
       }
-      item.chart.date = '';
-      item.chart.options = [];
-      for(var i = 0; i < dates.length; i++){
-        item.chart.options.push({
-          value: i,
-          label: dates[i],
-        });
-      }
+      item.chart.date = dates[0];
+      item.chart.options = dates;
     },
     updateChart() {
       //alert(this.activeNames);
@@ -189,8 +191,9 @@ export default {
       var x_data = [];
       var y_data = [];
       var item = that.details[that.activeNames];
-      x_data = item.data[item.chart.date].times;
-      y_data = item.data[item.chart.date].values;
+      var index = item.chart.options.indexOf(item.chart.date);
+      x_data = item.data[index].times;
+      y_data = item.data[index].values;
       if(that.activeNames === 0){
         y_name = '℃(摄氏度)';
       }
@@ -296,14 +299,15 @@ export default {
                 </el-col>
                 <el-col :span="16">
                   <el-row>
-                    <el-select v-model="item.chart.date" class="m-2" placeholder="Select" @change="updateChart">
-                      <el-option
-                        v-for="it in item.chart.options"
-                        :key="it.value"
-                        :label="it.label"
-                        :value="it.value"
+                      <el-date-picker
+                        v-model="item.chart.date"
+                        type="date"
+                        placeholder="选择日期"
+                        format="YYYY/MM/DD"
+                        value-format="YYYY/MM/DD"
+                        :disabled-date="disabledDate"
+                        @change="updateChart"
                       />
-                    </el-select>
                   </el-row>
                   <el-row>
                     <div id="myChart" ref="chart" style="width: 600px;height:400px;"></div>
