@@ -1,6 +1,6 @@
 <script>
 import * as echarts from 'echarts';
-
+import mqtt from 'mqtt'
 export default {
   name: 'subscribe',
   data() {
@@ -325,7 +325,5 @@ export default {
   margin-left: 5%;
   line-height: 3.5vh;
 }
-.message{
 
-}
 </style>

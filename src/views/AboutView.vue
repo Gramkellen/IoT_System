@@ -1,7 +1,7 @@
 <script>
 import { User,Bell,UploadFilled,Help, } from '@element-plus/icons-vue';
 import { RouterLink, RouterView } from 'vue-router'
-
+import Particles from '@/components/particles/index.vue'
 export default {
   name: 'about',
   components:{
@@ -9,6 +9,7 @@ export default {
     Bell,
     UploadFilled,
     Help,
+    "particles":Particles
   },
   methods: {
     changePage() {
@@ -20,6 +21,7 @@ export default {
 
 <template>
   <div class="about">
+    <div class="layer">
     <el-row>
       <el-col :span="4">
         <el-menu
@@ -27,9 +29,9 @@ export default {
           class="el-menu-vertical-demo"
         >
           <el-menu-item index="1">
-            <RouterLink to="/about/user">
+            <RouterLink to="/about/dataview">
               <el-icon><User /></el-icon>
-              <span>个人信息</span>
+              <span>数据展示</span>
             </RouterLink>
           </el-menu-item>
           <el-menu-item index="2">
@@ -56,7 +58,11 @@ export default {
         <RouterView />
       </el-col>
     </el-row>
+    
   </div>
+  <particles></particles>
+  </div>
+  
 </template>
 
 <style>
@@ -68,5 +74,22 @@ a{
   text-decoration: none;
   color: rgb(73, 73, 73);
   font-size: 1.8vh;
+}
+.about {
+  .layer {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 1001;
+  }
+  #particles-js {
+  
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  }
 }
 </style>
