@@ -1,11 +1,11 @@
 <script>
-import { User,Bell,UploadFilled,Help, } from '@element-plus/icons-vue';
+import { Histogram,Bell,UploadFilled,Help, } from '@element-plus/icons-vue';
 import { RouterLink, RouterView } from 'vue-router'
 import Particles from '@/components/particles/index.vue'
 export default {
   name: 'about',
   components:{
-    User,
+    Histogram,
     Bell,
     UploadFilled,
     Help,
@@ -23,14 +23,15 @@ export default {
   <div class="about">
     <div class="layer">
     <el-row>
-      <el-col :span="4">
+      <el-col :span="3">
+        
         <el-menu
           default-active="2"
           class="el-menu-vertical-demo"
         >
           <el-menu-item index="1">
             <RouterLink to="/about/dataview">
-              <el-icon><User /></el-icon>
+              <el-icon><Histogram /></el-icon>
               <span>数据展示</span>
             </RouterLink>
           </el-menu-item>
@@ -54,7 +55,7 @@ export default {
           </el-menu-item>
       </el-menu>
       </el-col>
-      <el-col :span="16">
+      <el-col :span="17">
         <RouterView />
       </el-col>
     </el-row>
@@ -68,20 +69,23 @@ export default {
 <style>
 .router-link-active {
   text-decoration: none;
-  color: #45a2ff;
+  color: #86b9ed;
 }
 a{
   text-decoration: none;
-  color: rgb(73, 73, 73);
+  color: rgb(255, 255, 255);
   font-size: 1.8vh;
 }
+
 .about {
+  height: 100%;
   .layer {
   position: absolute;
   height: 100%;
   width: 100%;
   z-index: 1001;
   }
+
   #particles-js {
   
   position: absolute;
@@ -91,5 +95,10 @@ a{
   height: 100%;
   z-index: 1000;
   }
+}
+.el-menu{
+  background-color: rgb(43, 46, 67,0.6);
+  height:100vh
+
 }
 </style>
