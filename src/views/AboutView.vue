@@ -52,13 +52,16 @@ export default {
           <el-menu-item index="4">
             <RouterLink to="/about/help">
               <el-icon><Help /></el-icon>
-              <span>数据展示</span>
+              <span>数据预测</span>
             </RouterLink>
           </el-menu-item>
       </el-menu>
       </el-col>
       <el-col :span="21">
-        <RouterView />
+        <el-scrollbar height="100vh">
+          <RouterView />
+        </el-scrollbar>
+        
       </el-col>
     </el-row>
     
