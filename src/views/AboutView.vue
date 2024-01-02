@@ -2,6 +2,8 @@
 import { Histogram,Bell,UploadFilled,Help, } from '@element-plus/icons-vue';
 import { RouterLink, RouterView } from 'vue-router'
 import Particles from '@/components/particles/index.vue'
+
+
 export default {
   name: 'about',
   components:{
@@ -32,7 +34,7 @@ export default {
           <el-menu-item index="1">
             <RouterLink to="/about/dataview">
               <el-icon><Histogram /></el-icon>
-              <span>数据展示</span>
+              <span>数据概览</span>
             </RouterLink>
           </el-menu-item>
           <el-menu-item index="2">
@@ -50,12 +52,12 @@ export default {
           <el-menu-item index="4">
             <RouterLink to="/about/help">
               <el-icon><Help /></el-icon>
-              <span>Navigator</span>
+              <span>数据展示</span>
             </RouterLink>
           </el-menu-item>
       </el-menu>
       </el-col>
-      <el-col :span="17">
+      <el-col :span="21">
         <RouterView />
       </el-col>
     </el-row>

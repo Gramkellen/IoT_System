@@ -2,74 +2,65 @@
   <div class="brand-container">
   	<div class="wrap">
       <header>
-        <div class="weather">
-          <img :src="imgSrc">
-          <span class="tem">{{ weatcherData.tem }}°C</span> 
-          <span class="wea">{{ weatcherData.wea }}</span>
-        </div>
-        <h2>温度/湿度/气压数据概览</h2>
-        <div class="showTime">
-          <span class="time">{{ nowTime }}</span>
-          <span class="date">
-            <span>{{ week }}</span>
-            <span>{{ date }}</span>
-          </span>
-        </div>
+        <h2>某区域温度/湿度/气压数据发布订阅及分析处理系统</h2>
       </header>
 
       <section class="mainbox">
         <div class="item left">
           <div class="panel">
-            <h2>业务范围</h2>
-            <business />
+            <h2>一周气压对比图</h2>
+
+            <business></business>
+            
             <div class="panel-footer"></div>
           </div>
           <div class="panel">
-            <h2>人才队伍</h2>
+            <h2>一周内每天最高/低气温</h2>
             <talent />
             <div class="panel-footer"></div>
           </div>
-          <div class="panel">
-            <h2>营收状况</h2>
-            <income />
-            <div class="panel-footer"></div>
-          </div>
+          
         </div>
 
         <div class="item center">
           <div class="resume">
-            <div class="resume-hd">
-        
+            <div class="resume-hd"> 
+              <ul>
+                <li>
+                  <count-to :startVal="500" :endVal="600" :duration="1000"></count-to>
+                </li>
+                <li>
+                  <count-to :startVal="422" :endVal="780" :duration="3000"></count-to>
+                </li>
+                <li>
+                  <count-to :startVal="512" :endVal="700" :duration="3000"></count-to>
+                </li>
+              </ul>
             </div>
             <div class="resume-bd">
               <ul>
-                <li>公司总人数（单位：人）</li>
-                <li>技术人员占比（单位：%）</li>
-                <li>产品投资额（单位：万元）</li>
-              </ul>
+                <li>温度数据</li>
+                <li>湿度数据</li>
+                <li>气压数据</li>
+              </ul> 
             </div>
           </div>
-          <div class="map">
-            <div class="chart" id="chart_map"></div>
-            <div class="map1"></div>
-            <div class="map2"></div>
-            <div class="map3"></div>
+          <div class="panel">
+            <h2>温湿度/气压折线图</h2>
+            <wordCloud />
+            <div class="panel-footer"></div>
           </div>
         </div>
 
         <div class="item right">
           <div class="panel">
-            <h2>产品热词</h2>
+            <h2>温湿度仪表盘</h2>
             <wordCloud />
             <div class="panel-footer"></div>
           </div>
+          
           <div class="panel">
-            <h2>客户分布</h2>
-            <distribution />
-            <div class="panel-footer"></div>
-          </div>
-          <div class="panel">
-            <h2>发展历程</h2>
+            <h2>数据自动滑动</h2>
             <history />
             <div class="panel-footer"></div>
           </div>
@@ -82,13 +73,17 @@
 </template>
 
 <script>
-
-
+import '@/assets/js/flexible'
+import business from '@/components/DataView/business.vue'
+import history from '@/components/DataView/history.vue'
+import { CountTo } from 'vue3-count-to';
+import * as echarts from 'echarts';
 export default {
   name: 'dataview',
-  components: {
-    
-  },
+  components: { CountTo,
+    business,
+    history,
+     },
   data() {
   	return {
       nowTime: '',
@@ -97,13 +92,14 @@ export default {
       timer: null,
       imgSrc: '',
       weatcherData: {},
-  
+
   	}
   },
   computed: {
   	
   },
   created() {
+    
   },
   mounted() {
     this.getWeather();
@@ -115,62 +111,6 @@ export default {
     this.getEchart();
   },
   methods: {
-    timeFormate(timeStamp) { //显示当前时间
-      let newDate = new Date(timeStamp);
-      let year = newDate.getFullYear();
-      let month = newDate.getMonth() + 1 < 10 ? '0' + (newDate.getMonth() + 1) : newDate.getMonth() + 1;
-      let date = newDate.getDate() < 10 ? '0' + newDate.getDate() : newDate.getDate();
-      let hh = newDate.getHours() < 10 ? '0' + newDate.getHours() : newDate.getHours();
-      let mm = newDate.getMinutes() < 10 ? '0' + newDate.getMinutes() : newDate.getMinutes();
-      let ss = newDate.getSeconds() < 10 ? '0' + newDate.getSeconds() : newDate.getSeconds();
-      let week = newDate.getDay();
-      let weeks = ['日', '一', '二', '三', '四', '五', '六'];
-      let getWeek = '星期' + weeks[week];
-      this.week = getWeek;
-      this.date = year + '.' + month + '.' + date;
-      this.nowTime = hh + ':' + mm + ':' + ss;
-    },
-    nowTimes() {
-      this.timeFormate(new Date());
-      setInterval(this.nowTimes, 1000);
-      this.clear();
-    },
-    clear() {
-      clearInterval(this.nowTimes)
-      this.nowTimes = null;
-    },
-    getWeather() { // 第三方天气api接口
-      axios.get('https://www.tianqiapi.com/api/', {
-        params: {
-          appid: '26148275',
-          appsecret: '2id6H48Y',
-          version: 'v6'
-        }
-      }).then(res => {
-        if (res.data) {
-          if (res.data.wea_img == 'xue') {
-            this.imgSrc = require('../assets/img/brand/xue.png');
-          } else if (res.data.wea_img == 'yin') {
-            this.imgSrc = require('../assets/img/brand/yin.png');
-          } else if (res.data.wea_img == 'yu' || res.data.wea_img == 'bingbao') {
-            this.imgSrc = require('../assets/img/brand/yu.png');
-          } else if (res.data.wea_img == 'yun') {
-            this.imgSrc = require('../assets/img/brand/yun.png');
-          } else if (res.data.wea_img == 'wu') {
-            this.imgSrc = require('../assets/img/brand/wu.png');
-          } else if (res.data.wea_img == 'shachen') {
-            this.imgSrc = require('../assets/img/brand/shachen.png');
-          } else if (res.data.wea_img == 'lei') {
-            this.imgSrc = require('../assets/img/brand/lei.png');
-          } else {
-            this.imgSrc = require('../assets/img/brand/qing.png');
-          }
-          this.weatcherData = res.data;
-        }
-      }).catch(err => {
-        console.log(err)
-      })
-    }
   }
 }
 </script>
@@ -178,17 +118,18 @@ export default {
 <style lang="scss" scoped>
 .brand-container {
   position: absolute;
-  width: 100%;
+  width: 100vw;
   height: 100vh;
-  background-color: rgba(59, 138, 191, 0.5);
+  background-color: rgba(57, 105, 137, 0.5);
   .wrap {
-    background-color: rgba(0, 0, 0, 0.0);
+    background-color: rgba(0, 0, 0, 0.0); 
     background-size: cover;
-    line-height: 1.15;
+    line-height: 1.25;
     height: 100vh;
     header {
       position: relative;
       height: 1rem;
+      width: 1355px;
       background: url(../assets/img/brand/head_bg.png) no-repeat top center;
       background-size: 100% 100%;
       h2 {
@@ -240,15 +181,16 @@ export default {
     }
     
     .mainbox {
-      min-width: 1024px;
-      max-width: 1920px;
+      height: 640px;
+      min-width: 960px;
+      max-width: 1235px;
       padding: 0.125rem 0.125rem 0;
       display: flex;
       background: rgba(0, 0, 0, 0.1);
       .item {
         flex: 3;
         &.center {
-          flex: 5;
+          flex: 4;
           margin: 0 0.125rem 0.1rem;
           overflow: hidden;
 
@@ -331,9 +273,11 @@ export default {
       }
 
     }
+
+   
     .panel {
           position: relative;
-          height: 3.875rem;
+          height: 5rem;
           border: 1px solid rgba(25, 186, 139, 0.17);
           background: rgba(255, 255, 255, 0.04) url(../assets/img/brand/line.png);
           padding: 0 0.1875rem 0;
@@ -385,53 +329,25 @@ export default {
               border-right: 2px solid #02a6b5;
             }
           }
+
+          h2 {
+            height: 0.6rem;
+            line-height: 0.6rem;
+            text-align: center;
+            color: #fff;
+            font-size: 0.225rem;
+            font-weight: 400;
+            a {
+              margin: 0 0.1875rem;
+              color: #fff;
+              text-decoration: none;
+            }
+          }
+          .chart {
+            height: 5rem;
+          }
         }
   }
 
 }
-
-@-webkit-keyframes rotate {
-  from {
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-  to {
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
-}
-@keyframes rotate {
-  from {
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-  to {
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
-}
-
-@-webkit-keyframes rotate1 {
-  from {
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-  to {
-    transform: translate(-50%, -50%) rotate(-360deg);
-  }
-}
-@keyframes rotate1 {
-  from {
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-  to {
-    transform: translate(-50%, -50%) rotate(-360deg);
-  }
-}
-
-@media screen and (max-width: 1024px) {
-  html {
-    font-size: 42px !important;
-  }
-}
-@media screen and (min-width: 1920) {
-  html {
-    font-size: 80px !important;
-  }
-}	
 </style>

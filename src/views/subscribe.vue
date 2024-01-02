@@ -1,10 +1,46 @@
 <script>
 import * as echarts from 'echarts';
+import axios  from "axios";
 import mqtt from 'mqtt'
 export default {
   name: 'subscribe',
   data() {
     return {
+      /* 以下为mqtt相关 */
+      connection: {
+        protocol: "ws",           //mqtt服务器协议（ws/mqtt）
+        host: "broker.emqx.io",   //mqtt服务器主机名或ip地址
+        port: 8083,               //mqtt服务器端口号
+        //host: "100.78.169.243",        
+        //port: 1883,
+        endpoint: "/mqtt",        //mqtt服务器端点
+
+        clean: true,
+        connectTimeout: 30 * 1000, // ms
+        reconnectPeriod: 4000, // ms
+        clientId: "emqx_vue_" + Math.random ().toString (16).substring (2, 8),    //客户端id
+      },
+      subscription: {
+        topic: "topic/mqttx",
+        qos: 0,                 //服务质量
+      },
+      publish: {
+        topic: "topic/browser",
+        qos: 0,
+        payload: '{ "msg": "Hello, I am browser." }',     //有效载荷
+      },
+      receiveNews: "",          //订阅接收到的信息
+      qosList: [0, 1, 2],       //mqtt三种服务质量等级
+      client: {                 //客户端是否已连接到mqtt服务器
+        connected: false,
+      },
+      subscribeSuccess: false,    //是否成功订阅到主题
+      connecting: false,          //是否正在尝试连接到mqtt服务器
+      retryTimes: 0,              //尝试重新连接到MQTT服务器的次数  
+      
+      topics:['temperature','humidity','pressure'],   //可订阅主题
+
+      /* 以下为订阅相关 */
       user: "",       //用户
 
       theme: [],      //订阅主题
@@ -60,7 +96,90 @@ export default {
       myChart: null,
     }
   },
+  watch:{
+  },
   methods: {
+    /* 以下为mqtt相关 */
+    initData () {
+      this.client = {
+        connected: false,
+      };
+      this.retryTimes = 0;
+      this.connecting = false;
+      this.subscribeSuccess = false;
+    },
+    handleOnReConnect () {
+      this.retryTimes += 1;
+      if (this.retryTimes > 5) {
+        try {
+          this.client.end ();
+          this.initData ();
+          this.$message.error ("Connection maxReconnectTimes limit, stop retry");
+        } catch (error) {
+          this.$message.error (error.toString ());
+        }
+      }
+    },
+    createConnection () {
+      try {
+        this.connecting = true;
+        const { protocol, host, port, endpoint, ...options } = this.connection;
+        const connectUrl = `${protocol}://${host}:${port}${endpoint}`;
+        //const connectUrl = ' http://100.78.169.243:1883/';
+        this.client = mqtt.connect (connectUrl, options);
+        if (this.client.on) {
+          this.client.on ("connect", () => {
+            this.connecting = false;
+            console.log ("Connection succeeded!");
+          });
+          this.client.on ("reconnect", this.handleOnReConnect);
+          this.client.on ("error", (error) => {
+            console.log ("Connection failed", error);
+          });
+          this.client.on ("message", (topic, message) => {
+            this.receiveNews = this.receiveNews.concat (message);
+            console.log (`Received message ${message} from topic ${topic}`);
+            //alert(`Received message ${message} from topic ${topic}`);
+            this.updateDetails(topic, message);
+          });
+        }
+      } catch (error) {
+        this.connecting = false;
+        console.log ("mqtt.connect error", error);
+      }
+    },
+    subscribeTopic(topic) {
+      const qos = this.subscription.qos;
+      this.client.subscribe(topic, { qos }, (error) => {
+        if (!error) {
+          this.subscribeSuccess = true;
+          console.log(`Subscribe to topic ${topic} successfully!`);
+        } else {
+          console.log(`Subscribe to topic ${topic} failed: `, error);
+        }
+      });
+    },
+    unsubscribeTopic(topic) {
+      this.client.unsubscribe(topic, error => {
+        if (!error) {
+          console.log(`Unsubscribed from topic ${topic} successfully!`);
+        } else {
+          console.log(`Unsubscribe from topic ${topic} failed: `, error);
+        }
+      });
+    },
+    publishMessage(topic, message) {
+      const qos = this.publish.qos;
+      this.client.publish(topic, message, { qos }, (error) => {
+        if (!error) {
+          console.log(`Publish message to topic ${topic} successfully!`);
+          //alert(`Published message ${message} to topic ${topic}`);
+        } else {
+          console.log(`Publish message to topic ${topic} failed: `, error);
+        }
+      });
+    },
+    /* 以下为订阅相关 */
     disabledDate(time) {
       var that = this;
       var item = that.details[that.activeNames];
@@ -79,78 +198,107 @@ export default {
       var times = labels.map(function(label) {
         return label.slice(11);
       });
+      var time = labels[0].split("T")[0];
       return {
+        time:time.replace(/-/g,'/'),
         labels: labels,
         values: values,
         times: times,
       };
     },
-    init(){     //初始化函数
+    init(){     //初始化函数-----初始化数据待补充(initial)
       var that = this;
-      that.user = "";             //获取用户信息
 
-      that.theme.push(0);         //预设选项，已订阅的主题
-      
       var item = {"2014-02-13T06:20:00": "3.0", "2014-02-13T13:50:00": "7.0", "2014-02-13T06:00:00": "2", "2014-02-13T03:00:00": "3", "2014-02-13T13:00:00": "6", "2014-02-13T18:50:00": "4.0", "2014-02-13T13:20:00": "6.0", "2014-02-13T15:00:00": "6", "2014-02-13T08:50:00": "4.0", "2014-02-13T21:50:00": "4.0", "2014-02-13T08:00:00": "3", "2014-02-13T07:50:00": "3.0", "2014-02-13T08:20:00": "4.0", "2014-02-13T21:20:00": "3.0", "2014-02-13T11:50:00": "6.0", "2014-02-13T11:20:00": "6.0", "2014-02-13T17:50:00": "5.0", "2014-02-13T11:00:00": "6", "2014-02-13T05:50:00": "2.0", "2014-02-13T20:50:00": "3.0", "2014-02-13T20:20:00": "4.0", "2014-02-13T16:00:00": "6", "2014-02-13T23:50:00": "2.0", "2014-02-13T21:00:00": "3", "2014-02-13T07:20:00": "3.0", "2014-02-13T03:20:00": "3.0", "2014-02-13T07:00:00": "3", "2014-02-13T15:50:00": "6.0", "2014-02-13T03:50:00": "2.0", "2014-02-13T04:00:00": "2", "2014-02-13T12:00:00": "6", "2014-02-13T04:20:00": "2.0", "2014-02-13T12:20:00": "6.0", "2014-02-13T12:50:00": "6.0", "2014-02-13T22:50:00": "3.0", "2014-02-13T09:00:00": "4", "2014-02-13T09:20:00": "4.0", "2014-02-13T09:50:00": "4.0", "2014-02-13T18:00:00": "5", "2014-02-13T05:20:00": "2.0", "2014-02-13T15:20:00": "6.0", "2014-02-13T00:50:00": "4.0", "2014-02-13T14:50:00": "7.0", "2014-02-13T00:00:00": "4", "2014-02-13T00:20:00": "4.0", "2014-02-13T06:50:00": "3.0", "2014-02-13T22:00:00": "4", "2014-02-13T18:20:00": "5.0", "2014-02-13T02:50:00": "3.0", "2014-02-13T02:20:00": "3.0", "2014-02-13T04:50:00": "2.0", "2014-02-13T02:00:00": "3", "2014-02-13T23:00:00": "3", "2014-02-13T16:50:00": "5.0", "2014-02-13T19:50:00": "4.0", "2014-02-13T19:20:00": "4.0", "2014-02-13T05:00:00": "2", "2014-02-13T19:00:00": "4", "2014-02-13T23:20:00": "3.0", "2014-02-13T14:20:00": "7.0", "2014-02-13T10:20:00": "5.0", "2014-02-13T10:00:00": "4", "2014-02-13T10:50:00": "5.0", "2014-02-13T17:00:00": "5", "2014-02-13T01:00:00": "4", "2014-02-13T17:20:00": "5.0", "2014-02-13T01:20:00": "4.0", "2014-02-13T01:50:00": "4.0", "2014-02-13T22:20:00": "3.0", "2014-02-13T16:20:00": "6.0"};
       var result = that.dataProcessing(item);
-      that.details[0].data.push(
-        {
-          receive: '2023-12-14-00:00:00',   //接收时间
-          time: '2014/02/13',         //如为2014-02-13在限制时间范围时会有bug
-          labels:result.labels,       //标签
-          values:result.values,       //数值
-          times: result.times,        //标签提取出时间
-        },
-        {
-          receive: '2023-12-14-00:00:10',   //接收时间
-          time: '2014/02/14',         //如为2014-02-13在限制时间范围时会有bug
-          labels:result.labels,       //标签
-          values:result.values,       //数值
-          times: result.times,        //标签提取出时间
-        },
-        {
-          receive: '2023-12-14-00:00:50',   //接收时间
-          time: '2014/02/15',         //如为2014-02-13在限制时间范围时会有bug
-          labels:result.labels,       //标签
-          values:result.values,       //数值
-          times: result.times,        //标签提取出时间
-        },
-      );
-      that.details[0].is_show = true;
-      
-      for(var i=0; i<3; i++)
-        that.updateDate(i);
+      var initial = {
+        user: '1234',           //用户--调接口时使用
+        topics:[            //主题订阅情况与历史数据
+          {
+            state: 1,       //已订阅
+            data:[
+              {
+                receive: '2023/12/14 00:00:00',   //接收时间
+                time: '2014/02/13',         //如为2014-02-13在限制时间范围时会有bug
+                labels:result.labels,       //标签    
+                values:result.values,       //数值
+                times: result.times,        //标签提取出时间
+              },
+              {
+                receive: '2023/12/14 00:00:10',   //接收时间
+                time: '2014/02/14',         //如为2014-02-13在限制时间范围时会有bug
+                labels:result.labels,       //标签
+                values:result.values,       //数值
+                times: result.times,        //标签提取出时间
+              },
+              {
+                receive: '2023/12/14 00:00:50',   //接收时间
+                time: '2014/02/15',         //如为2014-02-13在限制时间范围时会有bug
+                labels:result.labels,       //标签
+                values:result.values,       //数值
+                times: result.times,        //标签提取出时间
+              },
+            ],
+          },
+          {
+            state: 0,       //未订阅
+            data:[],
+          },
+          {
+            state: 1,
+            data:[
+              {
+                receive: '2023-12-14-00:00:00',   //接收时间
+                time: '2014/02/13',         //如为2014-02-13在限制时间范围时会有bug
+                labels:result.labels,       //标签    
+                values:result.values,       //数值
+                times: result.times,        //标签提取出时间
+              },
+            ],
+          },
+        ],
+      };
+
+      that.user = initial.user;             //获取用户信息
+      for(var i=0; i<3; i++){
+        if(initial.topics[i].state){        //已订阅
+          that.theme.push(i);                                 //预设选项，已订阅的主题
+          for(var j=0; j<initial.topics[i].data.length; j++)
+            that.details[i].data.push(initial.topics[i].data[j]);  //已订阅主题历史记录
+          that.details[i].is_show = true;
+          that.updateDate(i);
+        }
+      }
     },
-    handleClick_subscribe(){      //订阅
+    handleClick_subscribe(){      //订阅-----调用接口上传订阅状态
       var that = this;
+
+      axios.post('/weathersystem/subscribe/',{      //上传订阅状态
+        user:that.user,       // 用户'1234'
+        state:that.theme,     // 已订阅列表数组 例：[0,2] 表示已订阅温度气压，未订阅湿度   0-温度 1-湿度 2-气压
+      });
+      
       for(var i = 0; i < 3; i++){       //取消订阅
         if(that.details[i].is_show && !that.theme.includes(i)){
           that.details[i].data = [];
           that.details[i].is_show = false;
           if(that.activeNames === i){
-            that.activeNames = [];
+            that.activeNames = null;
           }
+          this.unsubscribeTopic(that.topics[i]);
         }
       }
       for(var i = 0; i < that.theme.length; i++){   //新订阅
         var index = that.theme[i];
         if(!that.details[index].is_show){
-          var item = {"2014-02-13T06:20:00": "3.0", "2014-02-13T13:50:00": "7.0", "2014-02-13T06:00:00": "2", "2014-02-13T03:00:00": "3", "2014-02-13T13:00:00": "6", "2014-02-13T18:50:00": "4.0", "2014-02-13T13:20:00": "6.0", "2014-02-13T15:00:00": "6", "2014-02-13T08:50:00": "4.0", "2014-02-13T21:50:00": "4.0", "2014-02-13T08:00:00": "3", "2014-02-13T07:50:00": "3.0", "2014-02-13T08:20:00": "4.0", "2014-02-13T21:20:00": "3.0", "2014-02-13T11:50:00": "6.0", "2014-02-13T11:20:00": "6.0", "2014-02-13T17:50:00": "5.0", "2014-02-13T11:00:00": "6", "2014-02-13T05:50:00": "2.0", "2014-02-13T20:50:00": "3.0", "2014-02-13T20:20:00": "4.0", "2014-02-13T16:00:00": "6", "2014-02-13T23:50:00": "2.0", "2014-02-13T21:00:00": "3", "2014-02-13T07:20:00": "3.0", "2014-02-13T03:20:00": "3.0", "2014-02-13T07:00:00": "3", "2014-02-13T15:50:00": "6.0", "2014-02-13T03:50:00": "2.0", "2014-02-13T04:00:00": "2", "2014-02-13T12:00:00": "6", "2014-02-13T04:20:00": "2.0", "2014-02-13T12:20:00": "6.0", "2014-02-13T12:50:00": "6.0", "2014-02-13T22:50:00": "3.0", "2014-02-13T09:00:00": "4", "2014-02-13T09:20:00": "4.0", "2014-02-13T09:50:00": "4.0", "2014-02-13T18:00:00": "5", "2014-02-13T05:20:00": "2.0", "2014-02-13T15:20:00": "6.0", "2014-02-13T00:50:00": "4.0", "2014-02-13T14:50:00": "7.0", "2014-02-13T00:00:00": "4", "2014-02-13T00:20:00": "4.0", "2014-02-13T06:50:00": "3.0", "2014-02-13T22:00:00": "4", "2014-02-13T18:20:00": "5.0", "2014-02-13T02:50:00": "3.0", "2014-02-13T02:20:00": "3.0", "2014-02-13T04:50:00": "2.0", "2014-02-13T02:00:00": "3", "2014-02-13T23:00:00": "3", "2014-02-13T16:50:00": "5.0", "2014-02-13T19:50:00": "4.0", "2014-02-13T19:20:00": "4.0", "2014-02-13T05:00:00": "2", "2014-02-13T19:00:00": "4", "2014-02-13T23:20:00": "3.0", "2014-02-13T14:20:00": "7.0", "2014-02-13T10:20:00": "5.0", "2014-02-13T10:00:00": "4", "2014-02-13T10:50:00": "5.0", "2014-02-13T17:00:00": "5", "2014-02-13T01:00:00": "4", "2014-02-13T17:20:00": "5.0", "2014-02-13T01:20:00": "4.0", "2014-02-13T01:50:00": "4.0", "2014-02-13T22:20:00": "3.0", "2014-02-13T16:20:00": "6.0"};
-          var result = that.dataProcessing(item);
-          that.details[index].data.push(
-            {
-              receive: '2023-12-14-00:00:30',   //接收时间
-              time: '2014/02/13',         //如为2014-02-13在限制时间范围时会有bug
-              labels:result.labels,       //横轴标签
-              values:result.values,       //数值
-              times: result.times,        //标签提取出时间
-            }
-          );
+          this.subscribeTopic(that.topics[index]);
           that.details[index].is_show = true;          
         }
       }
+      
       for(var i=0; i<3; i++)
         that.updateDate(i);
+
       //alert(that.details[0].data[0].labels);
       //alert('theme:' + that.theme);
       //alert(that.details[0].is_show);
@@ -184,7 +332,7 @@ export default {
       item.chart.date = dates[0];
       item.chart.options = dates;
     },
-    updateChart() {
+    updateChart() {               //更新图像
       //alert(this.activeNames);
       var that = this;
       var y_name = '';
@@ -207,30 +355,99 @@ export default {
         xAxis: {
           type: 'category',
           data: x_data,
+          axisLine: {
+            lineStyle: {
+              color: 'white'  // 这里设置x轴颜色
+            }
+          },
+          axisLabel: {
+            color: 'white'  // 这里设置x轴文字颜色
+          },
         },
         yAxis: {
           type: 'value',
           name: y_name,
+          axisLine: {
+            lineStyle: {
+              color: 'white'  // 这里设置y轴颜色
+            }
+          },
+          axisLabel: {
+            color: 'white'  // 这里设置y轴文字颜色
+          },
         },
         series: [{
           data: y_data,
           type: 'line',
+          smooth: true,
+          itemStyle: {
+            color: '#1CFEF0'  // 这里设置线的颜色
+          }
         }]
       };
       that.myChart.setOption(option);
     },
+    updateDetails(topic, message){       //更新已订阅信息-----调用接口传历史记录
+      var that = this;
+      var jsonObject = JSON.parse(message);           //string转json
+      var result = that.dataProcessing(jsonObject);   //数据处理
+      var index = that.topics.indexOf(topic);         //订阅主题
+      var item = that.details[index];                 
+      if(!item.chart.options.includes(result.time)){  //忽略重复日期
+        var receivetime = new Date();
+        that.details[index].data.push(
+          {
+            receive: receivetime.toLocaleString(),   //接收时间
+            time: result.time,          //如为2014-02-13在限制时间范围时会有bug
+            labels:result.labels,       //横轴标签
+            values:result.values,       //数值
+            times: result.times,        //标签提取出时间
+          }
+        );
+        axios.post('/weathersystem/history/',{
+          user:that.user,       // 用户'1234'
+          topic:topic,          //主题 'temperature'  'humidity'  'pressure'
+          data:{                //新接收信息（去除重复以后）
+            receive: receivetime.toLocaleString(),   //接收时间
+            time: result.time,          //如为2014-02-13在限制时间范围时会有bug
+            labels:result.labels,       //横轴标签
+            values:result.values,       //数值
+            times: result.times,        //标签提取出时间
+          }
+        });
+        that.updateDate(index);         //更新日期
+      }
+    },
+
+    /* 以下为测试相关 */
+    test_1(topic){
+      var tmp = {"2014-02-13T06:20:00": "3.0", "2014-02-13T13:50:00": "7.0", "2014-02-13T06:00:00": "2", "2014-02-13T03:00:00": "3", "2014-02-13T13:00:00": "6", "2014-02-13T18:50:00": "4.0", "2014-02-13T13:20:00": "6.0", "2014-02-13T15:00:00": "6", "2014-02-13T08:50:00": "4.0", "2014-02-13T21:50:00": "4.0", "2014-02-13T08:00:00": "3", "2014-02-13T07:50:00": "3.0", "2014-02-13T08:20:00": "4.0", "2014-02-13T21:20:00": "3.0", "2014-02-13T11:50:00": "6.0", "2014-02-13T11:20:00": "6.0", "2014-02-13T17:50:00": "5.0", "2014-02-13T11:00:00": "6", "2014-02-13T05:50:00": "2.0", "2014-02-13T20:50:00": "3.0", "2014-02-13T20:20:00": "4.0", "2014-02-13T16:00:00": "6", "2014-02-13T23:50:00": "2.0", "2014-02-13T21:00:00": "3", "2014-02-13T07:20:00": "3.0", "2014-02-13T03:20:00": "3.0", "2014-02-13T07:00:00": "3", "2014-02-13T15:50:00": "6.0", "2014-02-13T03:50:00": "2.0", "2014-02-13T04:00:00": "2", "2014-02-13T12:00:00": "6", "2014-02-13T04:20:00": "2.0", "2014-02-13T12:20:00": "6.0", "2014-02-13T12:50:00": "6.0", "2014-02-13T22:50:00": "3.0", "2014-02-13T09:00:00": "4", "2014-02-13T09:20:00": "4.0", "2014-02-13T09:50:00": "4.0", "2014-02-13T18:00:00": "5", "2014-02-13T05:20:00": "2.0", "2014-02-13T15:20:00": "6.0", "2014-02-13T00:50:00": "4.0", "2014-02-13T14:50:00": "7.0", "2014-02-13T00:00:00": "4", "2014-02-13T00:20:00": "4.0", "2014-02-13T06:50:00": "3.0", "2014-02-13T22:00:00": "4", "2014-02-13T18:20:00": "5.0", "2014-02-13T02:50:00": "3.0", "2014-02-13T02:20:00": "3.0", "2014-02-13T04:50:00": "2.0", "2014-02-13T02:00:00": "3", "2014-02-13T23:00:00": "3", "2014-02-13T16:50:00": "5.0", "2014-02-13T19:50:00": "4.0", "2014-02-13T19:20:00": "4.0", "2014-02-13T05:00:00": "2", "2014-02-13T19:00:00": "4", "2014-02-13T23:20:00": "3.0", "2014-02-13T14:20:00": "7.0", "2014-02-13T10:20:00": "5.0", "2014-02-13T10:00:00": "4", "2014-02-13T10:50:00": "5.0", "2014-02-13T17:00:00": "5", "2014-02-13T01:00:00": "4", "2014-02-13T17:20:00": "5.0", "2014-02-13T01:20:00": "4.0", "2014-02-13T01:50:00": "4.0", "2014-02-13T22:20:00": "3.0", "2014-02-13T16:20:00": "6.0"};
+      var jsonString = JSON.stringify(tmp);
+      //var jsonObject = JSON.parse(jsonString);
+      this.publishMessage(topic, jsonString);
+    },
   },
   created() {
-    this.init();
+    var that = this;
+    that.init();                  //初值--用户订阅状态/历史记录
+    that.createConnection();      //连接mqtt
+    that.client.on("connect", () => {
+      for(var i = 0; i < 3; i++){   
+        if(that.theme.includes(i)){   //订阅
+          this.subscribeTopic(that.topics[i]);
+        }
+      }
+    });
   },
   mounted() {
-    
   },
 }
 </script>
 
 <template>
   <div class="sub_wrapper">
+
+
     <el-row style="margin-top: 2%;">
       订阅主题：
       <el-select
@@ -246,10 +463,18 @@ export default {
           :value="item.value"
         />
       </el-select>
-      <el-button @click="handleClick_subscribe">
+      <el-button class='sub_button' @click="handleClick_subscribe">
         确定
       </el-button>
     </el-row>
+
+    <el-row style="margin-top: 2%;" v-if="1">
+      测试：
+      <el-button class='sub_button' @click="test_1('temperature')">温度</el-button>
+      <el-button class='sub_button' @click="test_1('humidity')">湿度</el-button>
+      <el-button class='sub_button' @click="test_1('pressure')">气压</el-button>
+    </el-row>
+
     <el-row>
       已订阅：
     </el-row>
@@ -261,7 +486,7 @@ export default {
           :title="item.label" 
           :name="index"
           :disabled="!item.is_show">
-          <el-card>
+          <el-card class="topic_bkground">
             <el-row>
               接收信息：
             </el-row>
@@ -317,7 +542,7 @@ export default {
             </div>
 
             <el-row style="margin-top: 2%;">
-              <el-button @click="handleClick_draw(index)">
+              <el-button class='sub_button' @click="handleClick_draw(index)">
                 <a v-if="!item.show_chart">生成图像</a>
                 <a v-else>隐藏图像</a>
               </el-button>
@@ -333,6 +558,25 @@ export default {
 .sub_wrapper{
   margin-left: 5%;
   line-height: 3.5vh;
+  color: white;
 }
-
+.sub_button{
+  color:white;
+  background-color: #5e7dcc;
+}
+.el-collapse {
+  --el-collapse-border-color: #001953;
+  --el-collapse-header-bg-color: rgba(62, 75, 144, 0.50);
+  --el-collapse-content-bg-color: rgba(62, 75, 144, 0.50);
+}
+.el-collapse-item__header{
+  color:rgb(189, 221, 243);
+}
+.el-input{
+  --el-input-bg-color: rgba(126, 177, 243, 0.5);
+}
+.topic_bkground{
+  background-color: rgba(103, 122, 223, 0.30);
+  color: white;
+}
 </style>
