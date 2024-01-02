@@ -15,7 +15,7 @@
         :accept="txt"
       >
       <div style="margin: 0 8px;"></div>
-        <el-button size="small" type="primary">点击上传</el-button>
+        <el-button size="small" type="primary" class="custom-button">点击上传</el-button>
         <div slot="tip" class="el-upload__tip el-icon-warning-outline" style="margin-left: 10px; color: #ffffff">只能上传txt文件</div>
       </el-upload>
     </el-row>
@@ -186,11 +186,20 @@ export default {
 .sub_wrapper {
   margin-left: 5%;
   line-height: 3.5vh;
+  font-size: 2.4vh;
 }
 .custom-tip {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+.custom-button {
+  margin-bottom:8%;
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  height:32px;
+  /* 添加其他样式属性 */
 }
 </style>   
