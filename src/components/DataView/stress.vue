@@ -1,13 +1,13 @@
 <template>
   <div class="business-container"> 
-    <div class="chart" id="chart_left1"></div>   
+    <div class="tabs" id="chartleft1"></div>   
   </div>
 </template>
 
 <script>
 import * as echarts from 'echarts';
 export default {
-  name: "business",
+  name: "stress",
   data() {
     return {
       
@@ -19,20 +19,11 @@ export default {
   methods: {
     getEchartLeft1() {
       // 实例化对象
-      let myChart = echarts.init(document.getElementById('chart_left1'));
-      let charts = { // 按顺序排列从大到小
-        cityList: ['金融行业', '电子政务', '文创版权', '教育行业', '智慧停车', '医疗互联', '物流行业'],
-        cityData: [1500, 1200, 900, 600, 400, 300, 100]
-      }
-      
-      let lineY = [];
-        let data = [20, 60, 70, 152, 70, 110, 130];
-        lineY.push(data) 
-
+      let myChart = echarts.init(document.getElementById('chartleft1'));
+      let data = [93, 66, 91, 84, 55, 93, 61];
       // 指定配置和数据
       let option = {
-  
-  color: ['blue'],
+  color: ['rgba(40, 237, 250, .3)'],
   textStyle: {
     color: '#fff'
   },
@@ -47,7 +38,8 @@ export default {
     {
       data: data,
       type: 'bar',
-      barWidth: 20
+      barWidth: 20,
+      barHeight: 55,
     },
     {
       type: 'lines',
@@ -95,8 +87,10 @@ export default {
 
 <style lang="scss" scoped>
 .business-container {
-  .chart {
-    height: 4.5rem;
-  }
+
+.tabs {
+  height: 5.5rem;
+  margin-top: -18%;
+}
 }
 </style>

@@ -396,7 +396,7 @@ export default {
       </el-button>
     </el-row>
 
-    <el-row style="margin-top: 2%;" v-if="1">
+    <el-row style="margin-top: 2%;" v-if="0">
       测试：
       <el-button class='sub_button' @click="test_1('temperature')">温度</el-button>
       <el-button class='sub_button' @click="test_1('humidity')">湿度</el-button>
