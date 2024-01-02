@@ -137,7 +137,7 @@ export default {
           this.client.on ("message", (topic, message) => {
             this.receiveNews = this.receiveNews.concat (message);
             console.log (`Received message ${message} from topic ${topic}`);
-            //alert(`Received message ${message} from topic ${topic}`);
+            alert(`Received message ${message} from topic ${topic}`);
             this.updateDetails(topic, message);
           });
         }
@@ -209,6 +209,10 @@ export default {
       axios.get('http://100.78.169.243:8000/query_sub?id=1').then(res =>{
         console.log(res.data);
         that.theme = res.data;
+        for(var i=0; i<that.theme.length; i++){
+          that.details[that.theme[i]].is_show = true;
+          that.subscribeTopic(that.topics[that.theme[i]]);
+        }
       });
     },
     handleClick_subscribe(){      //订阅-----调用接口上传订阅状态
@@ -308,6 +312,7 @@ export default {
         yAxis: {
           type: 'value',
           name: y_name,
+          min: 'dataMin', // 最小值
           axisLine: {
             lineStyle: {
               color: 'white'  // 这里设置y轴颜色

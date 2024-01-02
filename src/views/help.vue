@@ -94,10 +94,11 @@ export default {
       var x_data = [];
       var y_data = [];
       var item;
+      var bar_color='#1CFEF0';
       if(state === 0){
         item = that.temperature;
-
         y_name = '℃(摄氏度)';
+        bar_color='#F1FFB8';
       }
       else if(state === 1){
         item = that.humidity;
@@ -106,6 +107,7 @@ export default {
       else{
         item = that.pressure;
         y_name = 'hPa(百帕)';
+        bar_color='#8CFF8A';
       }
       x_data = item.labels;
       y_data = item.values;      
@@ -139,7 +141,7 @@ export default {
           type: 'bar',
           smooth: true,
           itemStyle: {
-            color: '#1CFEF0'  // 这里设置线的颜色
+            color: bar_color  // 这里设置线的颜色
           }
         }]
       };
