@@ -3,6 +3,11 @@ import * as echarts from 'echarts';
 import axios  from "axios";
 export default {
   name: 'help',
+  data(){
+    return{
+      ip:'100.80.222.123',
+    };
+  },
   components:{
     data_t:{},    //温度
     data_h:{},    //湿度
@@ -17,7 +22,7 @@ export default {
   methods: {
     init(){
       var that = this;
-    axios.get('http://100.78.169.243:8000/analysis?type=temperature').then(res =>{
+    axios.get('http://'+that.ip+':8000/analysis?type=temperature').then(res =>{
         that.data_t = res.data;
         //console.log(that.data_t);
         var result = that.dataProcessing(that.data_t);
@@ -35,7 +40,7 @@ export default {
 
       });
       //axios.get('http://100.78.169.243:8000/analysis?type=temperature').then(res =>{
-    axios.get('http://100.78.169.243:8000/analysis?type=humidity').then(res =>{
+    axios.get('http://'+that.ip+':8000/analysis?type=humidity').then(res =>{
         that.data_h = res.data;
         //console.log(that.data_h);
         var result = that.dataProcessing(that.data_h);
@@ -51,7 +56,7 @@ export default {
         });
       });
       //axios.get('http://100.78.169.243:8000/analysis?type=temperature').then(res =>{
-    axios.get('http://100.78.169.243:8000/analysis?type=pressure').then(res =>{
+    axios.get('http://'+that.ip+':8000/analysis?type=pressure').then(res =>{
         that.data_p = res.data;
         //console.log(that.data_p);
         var result = that.dataProcessing(that.data_p);

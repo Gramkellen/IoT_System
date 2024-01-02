@@ -11,7 +11,7 @@ export default {
         protocol: "ws",           //mqtt服务器协议（ws/mqtt）
         //host: "broker.emqx.io",   //mqtt服务器主机名或ip地址
         //port: 8083,               //mqtt服务器端口号
-        host: "100.78.169.243",        
+        host: "100.80.222.123",        
         port: 1883,
         endpoint: "/mqtt",        //mqtt服务器端点
 
@@ -93,6 +93,8 @@ export default {
         },
       ],
 
+      ip:'100.80.222.123',
+
       myChart: null,
     }
   },
@@ -137,7 +139,7 @@ export default {
           this.client.on ("message", (topic, message) => {
             this.receiveNews = this.receiveNews.concat (message);
             console.log (`Received message ${message} from topic ${topic}`);
-            alert(`Received message ${message} from topic ${topic}`);
+            //alert(`Received message ${message} from topic ${topic}`);
             this.updateDetails(topic, message);
           });
         }
@@ -206,7 +208,7 @@ export default {
     },
     init(){     //初始化函数-----初始化数据待补充(initial)
       var that = this;
-      axios.get('http://100.78.169.243:8000/query_sub?id=1').then(res =>{
+      axios.get('http://'+that.ip+':8000/query_sub?id=1').then(res =>{
         console.log(res.data);
         that.theme = res.data;
         for(var i=0; i<that.theme.length; i++){
@@ -218,7 +220,7 @@ export default {
     handleClick_subscribe(){      //订阅-----调用接口上传订阅状态
       var that = this;
       //axios.post('/weathersystem/history/',{
-      axios.post('http://100.78.169.243:8000/update_sub/',{      //上传订阅状态
+      axios.post('http://'+that.ip+':8000/update_sub/',{      //上传订阅状态
         id:1,       // 用户
         topic:that.theme,     // 已订阅列表数组 例：[0,2] 表示已订阅温度气压，未订阅湿度   0-温度 1-湿度 2-气压
       });   //{id:1,topic:[0,1,2]}
