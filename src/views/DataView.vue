@@ -1,5 +1,6 @@
 <template>
     <div class="container">
+        <el-button @click="changePage">返回首页</el-button>
       <el-col :span="8">
         <el-row><div class="row">第一列 - 第一行</div></el-row>
         <el-row><div class="row">第一列 - 第二行</div></el-row>
@@ -17,29 +18,12 @@
   <script>
   export default {
     name: 'dataview',
-    data(){
-      return {
-        user:'',
-        topics:[],
-      }
-    },
     methods: {
-      changePage() {
-        this.$router.push('/')
-      },
-      init(){
-
-        var initial = {
-        user: 'admin',           //用户--调接口时使用
-        };
-
-      },
-    },
-    created() {
-    var that = this;
-    that.init();                 
+    changePage() {
+      this.$router.push('/')
+    }
   },
-};
+  };
   </script>
   
   <style scoped>
