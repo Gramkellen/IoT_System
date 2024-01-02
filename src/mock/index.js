@@ -16,6 +16,10 @@ if (useMock) {
         };
     })
 
+    Mock.mock(/weathersystem\?user=.*/, 'get',{
+
+    });
+
 }
 
 export default Mock
