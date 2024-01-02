@@ -1,10 +1,14 @@
-import business from './DataView/business' // 业务范围
-import history from './DataView/history' // 发展历程
-
+import stress from './DataView/stress' 
+import history from './DataView/history' 
+import temp from './DataView/temp'
+import dash from './DataView/dash'
+import line1 from './DataView/line1'
 const components = {
-  business,
+  stress,
   history,
-  
+  temp,
+  dash,
+  line1,
 };
 
 const install = (Vue = {}) => {
