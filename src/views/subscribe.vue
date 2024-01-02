@@ -1,4 +1,4 @@
-<script>
+<script scoped>
 import * as echarts from 'echarts';
 import axios  from "axios";
 import mqtt from 'mqtt'
@@ -9,10 +9,10 @@ export default {
       /* 以下为mqtt相关 */
       connection: {
         protocol: "ws",           //mqtt服务器协议（ws/mqtt）
-        host: "broker.emqx.io",   //mqtt服务器主机名或ip地址
-        port: 8083,               //mqtt服务器端口号
-        //host: "100.78.169.243",        
-        //port: 1883,
+        //host: "broker.emqx.io",   //mqtt服务器主机名或ip地址
+        //port: 8083,               //mqtt服务器端口号
+        host: "100.78.169.243",        
+        port: 1883,
         endpoint: "/mqtt",        //mqtt服务器端点
 
         clean: true,
@@ -95,8 +95,6 @@ export default {
 
       myChart: null,
     }
-  },
-  watch:{
   },
   methods: {
     /* 以下为mqtt相关 */
@@ -208,75 +206,18 @@ export default {
     },
     init(){     //初始化函数-----初始化数据待补充(initial)
       var that = this;
-
-      var item = {"2014-02-13T06:20:00": "3.0", "2014-02-13T13:50:00": "7.0", "2014-02-13T06:00:00": "2", "2014-02-13T03:00:00": "3", "2014-02-13T13:00:00": "6", "2014-02-13T18:50:00": "4.0", "2014-02-13T13:20:00": "6.0", "2014-02-13T15:00:00": "6", "2014-02-13T08:50:00": "4.0", "2014-02-13T21:50:00": "4.0", "2014-02-13T08:00:00": "3", "2014-02-13T07:50:00": "3.0", "2014-02-13T08:20:00": "4.0", "2014-02-13T21:20:00": "3.0", "2014-02-13T11:50:00": "6.0", "2014-02-13T11:20:00": "6.0", "2014-02-13T17:50:00": "5.0", "2014-02-13T11:00:00": "6", "2014-02-13T05:50:00": "2.0", "2014-02-13T20:50:00": "3.0", "2014-02-13T20:20:00": "4.0", "2014-02-13T16:00:00": "6", "2014-02-13T23:50:00": "2.0", "2014-02-13T21:00:00": "3", "2014-02-13T07:20:00": "3.0", "2014-02-13T03:20:00": "3.0", "2014-02-13T07:00:00": "3", "2014-02-13T15:50:00": "6.0", "2014-02-13T03:50:00": "2.0", "2014-02-13T04:00:00": "2", "2014-02-13T12:00:00": "6", "2014-02-13T04:20:00": "2.0", "2014-02-13T12:20:00": "6.0", "2014-02-13T12:50:00": "6.0", "2014-02-13T22:50:00": "3.0", "2014-02-13T09:00:00": "4", "2014-02-13T09:20:00": "4.0", "2014-02-13T09:50:00": "4.0", "2014-02-13T18:00:00": "5", "2014-02-13T05:20:00": "2.0", "2014-02-13T15:20:00": "6.0", "2014-02-13T00:50:00": "4.0", "2014-02-13T14:50:00": "7.0", "2014-02-13T00:00:00": "4", "2014-02-13T00:20:00": "4.0", "2014-02-13T06:50:00": "3.0", "2014-02-13T22:00:00": "4", "2014-02-13T18:20:00": "5.0", "2014-02-13T02:50:00": "3.0", "2014-02-13T02:20:00": "3.0", "2014-02-13T04:50:00": "2.0", "2014-02-13T02:00:00": "3", "2014-02-13T23:00:00": "3", "2014-02-13T16:50:00": "5.0", "2014-02-13T19:50:00": "4.0", "2014-02-13T19:20:00": "4.0", "2014-02-13T05:00:00": "2", "2014-02-13T19:00:00": "4", "2014-02-13T23:20:00": "3.0", "2014-02-13T14:20:00": "7.0", "2014-02-13T10:20:00": "5.0", "2014-02-13T10:00:00": "4", "2014-02-13T10:50:00": "5.0", "2014-02-13T17:00:00": "5", "2014-02-13T01:00:00": "4", "2014-02-13T17:20:00": "5.0", "2014-02-13T01:20:00": "4.0", "2014-02-13T01:50:00": "4.0", "2014-02-13T22:20:00": "3.0", "2014-02-13T16:20:00": "6.0"};
-      var result = that.dataProcessing(item);
-      var initial = {
-        user: '1234',           //用户--调接口时使用
-        topics:[            //主题订阅情况与历史数据
-          {
-            state: 1,       //已订阅
-            data:[
-              {
-                receive: '2023/12/14 00:00:00',   //接收时间
-                time: '2014/02/13',         //如为2014-02-13在限制时间范围时会有bug
-                labels:result.labels,       //标签    
-                values:result.values,       //数值
-                times: result.times,        //标签提取出时间
-              },
-              {
-                receive: '2023/12/14 00:00:10',   //接收时间
-                time: '2014/02/14',         //如为2014-02-13在限制时间范围时会有bug
-                labels:result.labels,       //标签
-                values:result.values,       //数值
-                times: result.times,        //标签提取出时间
-              },
-              {
-                receive: '2023/12/14 00:00:50',   //接收时间
-                time: '2014/02/15',         //如为2014-02-13在限制时间范围时会有bug
-                labels:result.labels,       //标签
-                values:result.values,       //数值
-                times: result.times,        //标签提取出时间
-              },
-            ],
-          },
-          {
-            state: 0,       //未订阅
-            data:[],
-          },
-          {
-            state: 1,
-            data:[
-              {
-                receive: '2023-12-14-00:00:00',   //接收时间
-                time: '2014/02/13',         //如为2014-02-13在限制时间范围时会有bug
-                labels:result.labels,       //标签    
-                values:result.values,       //数值
-                times: result.times,        //标签提取出时间
-              },
-            ],
-          },
-        ],
-      };
-
-      that.user = initial.user;             //获取用户信息
-      for(var i=0; i<3; i++){
-        if(initial.topics[i].state){        //已订阅
-          that.theme.push(i);                                 //预设选项，已订阅的主题
-          for(var j=0; j<initial.topics[i].data.length; j++)
-            that.details[i].data.push(initial.topics[i].data[j]);  //已订阅主题历史记录
-          that.details[i].is_show = true;
-          that.updateDate(i);
-        }
-      }
+      axios.get('http://100.78.169.243:8000/query_sub?id=1').then(res =>{
+        console.log(res.data);
+        that.theme = res.data;
+      });
     },
     handleClick_subscribe(){      //订阅-----调用接口上传订阅状态
       var that = this;
-
-      axios.post('/weathersystem/subscribe/',{      //上传订阅状态
-        user:that.user,       // 用户'1234'
-        state:that.theme,     // 已订阅列表数组 例：[0,2] 表示已订阅温度气压，未订阅湿度   0-温度 1-湿度 2-气压
-      });
+      //axios.post('/weathersystem/history/',{
+      axios.post('http://100.78.169.243:8000/update_sub/',{      //上传订阅状态
+        id:1,       // 用户
+        topic:that.theme,     // 已订阅列表数组 例：[0,2] 表示已订阅温度气压，未订阅湿度   0-温度 1-湿度 2-气压
+      });   //{id:1,topic:[0,1,2]}
       
       for(var i = 0; i < 3; i++){       //取消订阅
         if(that.details[i].is_show && !that.theme.includes(i)){
@@ -404,17 +345,6 @@ export default {
             times: result.times,        //标签提取出时间
           }
         );
-        axios.post('/weathersystem/history/',{
-          user:that.user,       // 用户'1234'
-          topic:topic,          //主题 'temperature'  'humidity'  'pressure'
-          data:{                //新接收信息（去除重复以后）
-            receive: receivetime.toLocaleString(),   //接收时间
-            time: result.time,          //如为2014-02-13在限制时间范围时会有bug
-            labels:result.labels,       //横轴标签
-            values:result.values,       //数值
-            times: result.times,        //标签提取出时间
-          }
-        });
         that.updateDate(index);         //更新日期
       }
     },
@@ -438,8 +368,6 @@ export default {
         }
       }
     });
-  },
-  mounted() {
   },
 }
 </script>
@@ -557,8 +485,10 @@ export default {
 <style>
 .sub_wrapper{
   margin-left: 5%;
+  width:80%;
   line-height: 3.5vh;
   color: white;
+  font-size: 2vh;
 }
 .sub_button{
   color:white;
