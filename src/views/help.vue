@@ -163,8 +163,28 @@ export default {
 
 <template>
   <div>
-    <div id="myChart_t" ref="chart"  style="width: 1000px;height:400px;"></div> 
-    <div id="myChart_h" ref="chart"  style="width: 1000px;height:400px;"></div>  
-    <div id="myChart_p" ref="chart"  style="width: 1000px;height:400px;"></div>   
+
+    <el-card class="topic_bkground">
+      <a>温度预测曲线：</a>
+      <div id="myChart_t" ref="chart"  style="width: 1100px;height:400px;"></div> 
+    </el-card>
+    <el-card class="topic_bkground">
+      <a>湿度预测曲线：</a>
+      <div id="myChart_h" ref="chart"  style="width: 1100px;height:400px;"></div>  
+    </el-card>
+    <el-card class="topic_bkground">
+      <a>气压预测曲线：</a>
+      <div id="myChart_p" ref="chart"  style="width: 1100px;height:400px;"></div>   
+    </el-card>
+    <br>
   </div>
 </template>
+
+<style scoped>
+.topic_bkground{
+  background-color: rgba(103, 122, 223, 0.30);
+  color: white;
+  margin-left: 1%;
+  width:97%;  
+}
+</style>

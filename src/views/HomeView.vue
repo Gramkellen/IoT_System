@@ -73,7 +73,7 @@
 		login () {
 			if (this.userName == 'admin' && this.userPwd == '123456') {
 		   this.$router.push({
-			path: '/about'
+			path: '/about/dataview'
 		   })
 		} else {
 		  this.$Toast({
