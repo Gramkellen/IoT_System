@@ -8,15 +8,14 @@
       <section class="mainbox">
         <div class="item left">
           <div class="panel">
-            <h2>一周气压对比图</h2>
-
-            <business></business>
-            
+            <h2>一周湿度对比</h2>
+            <stress></stress>
             <div class="panel-footer"></div>
           </div>
+
           <div class="panel">
-            <h2>一周内每天最高/低气温</h2>
-            <talent />
+            <h2>一周最高/最低温度</h2>
+            <temp ></temp>>
             <div class="panel-footer"></div>
           </div>
           
@@ -27,13 +26,13 @@
             <div class="resume-hd"> 
               <ul>
                 <li>
-                  <count-to :startVal="500" :endVal="600" :duration="1000"></count-to>
+                  <count-to :startVal="0" :endVal="600" :duration="3100"></count-to>
                 </li>
                 <li>
-                  <count-to :startVal="422" :endVal="780" :duration="3000"></count-to>
+                  <count-to :startVal="0" :endVal="780" :duration="3100"></count-to>
                 </li>
                 <li>
-                  <count-to :startVal="512" :endVal="700" :duration="3000"></count-to>
+                  <count-to :startVal="0" :endVal="700" :duration="3100"></count-to>
                 </li>
               </ul>
             </div>
@@ -45,9 +44,9 @@
               </ul> 
             </div>
           </div>
-          <div class="panel">
-            <h2>温湿度/气压折线图</h2>
-            <wordCloud />
+          <div class="panelx">
+            <h2>温湿度/气压复合图</h2>
+            <line1></line1 >
             <div class="panel-footer"></div>
           </div>
         </div>
@@ -55,12 +54,12 @@
         <div class="item right">
           <div class="panel">
             <h2>温湿度仪表盘</h2>
-            <wordCloud />
+            <dash />
             <div class="panel-footer"></div>
           </div>
           
           <div class="panel">
-            <h2>数据自动滑动</h2>
+            <h2>温度数据上传记录</h2>
             <history />
             <div class="panel-footer"></div>
           </div>
@@ -72,46 +71,32 @@
   </div>
 </template>
 
-<script>
+<script >
 import '@/assets/js/flexible'
-import business from '@/components/DataView/business.vue'
+import stress from '@/components/DataView/stress.vue'
 import history from '@/components/DataView/history.vue'
+import temp from '@/components/DataView/temp.vue'
+import dash from '@/components/DataView/dash.vue'
+import line1 from '@/components/DataView/line1.vue'
 import { CountTo } from 'vue3-count-to';
 import * as echarts from 'echarts';
 export default {
   name: 'dataview',
-  components: { CountTo,
-    business,
+  components: { 
+    CountTo,
+    stress,
     history,
+    temp,
+    dash,
+    line1,
+
      },
   data() {
   	return {
-      nowTime: '',
-      week: '',
-      date: '',
-      timer: null,
       imgSrc: '',
-      weatcherData: {},
-
   	}
   },
-  computed: {
-  	
-  },
-  created() {
-    
-  },
-  mounted() {
-    this.getWeather();
-    this.timer = setInterval(() => {
-      this.getWeather();
-    }, 1000 * 60 * 60)
-
-    this.nowTimes();
-    this.getEchart();
-  },
-  methods: {
-  }
+  
 }
 </script>
 
@@ -129,7 +114,7 @@ export default {
     header {
       position: relative;
       height: 1rem;
-      width: 1355px;
+      width: auto;
       background: url(../assets/img/brand/head_bg.png) no-repeat top center;
       background-size: 100% 100%;
       h2 {
@@ -138,45 +123,6 @@ export default {
         text-align: center;
         line-height: 0.75rem;
         letter-spacing: 1px;
-      }
-      .weather {
-        position: absolute;
-        left: 1.375rem;
-        top: 0.35rem;
-        font-size: 0.25rem;
-        color: rgba(126, 240, 255, .7);
-        img {
-          width: .45rem;
-        }
-        span {
-          display: inline-block;
-        }
-        .tem {
-          margin: 0 .1rem 0 .2rem;
-        }
-      }
-      .showTime {
-        position: absolute;
-        right: 1.375rem;
-        top: 0.5rem;
-        color: rgba(126, 240, 255, .7);
-        display: flex;
-        .time {
-          font-size: .28rem;
-          margin-right: .18rem;
-        }
-        .date {
-          span {
-            display: block;
-            &:nth-child(1) {
-              font-size: .12rem;
-              text-align: right;
-            }
-            &:nth-child(2) {
-              font-size: .14rem;
-            }
-          }
-        }
       }
     }
     
@@ -217,7 +163,7 @@ export default {
                   height: 1.2rem;
                   line-height: 1.2rem;
                   font-size: 0.65rem;
-                  color: #ffeb7b;
+                  color: #42b9da;
                   padding: 0.05rem 0;
                   font-family: 'DIGITALDREAMFAT';
                   font-weight: bold;
@@ -259,12 +205,12 @@ export default {
                 display: flex;
                 li {
                   flex: 1;
-                  height: 0.5rem;
-                  line-height: 0.5rem;
+                  height: 0.1rem;
+                  line-height: 0.1rem;
                   text-align: center;
                   font-size: 0.225rem;
                   color: rgba(255, 255, 255, 0.7);
-                  padding-top: 0.125rem;
+                  //padding-top: 0.125rem;
                 }
               }
             }
@@ -344,9 +290,84 @@ export default {
             }
           }
           .chart {
-            height: 5rem;
+            height: 6rem;
           }
         }
+        .panelx {
+          position: relative;
+          height: 54.7vh;
+          border: 1px solid rgba(25, 186, 139, 0.17);
+          background: rgba(255, 255, 255, 0.04) url(../assets/img/brand/line.png);
+          padding: 0 0.1875rem 0;
+          margin-bottom: 0.1875rem;
+          &:before {
+            position: absolute;
+            top: 0;
+            left: 0;
+            content: "";
+            width: 10px;
+            height: 10px;
+            border-top: 2px solid #02a6b5;
+            border-left: 2px solid #02a6b5;
+          }
+          &:after {
+            position: absolute;
+            top: 0;
+            right: 0;
+            content: "";
+            width: 10px;
+            height: 10px;
+            border-top: 2px solid #02a6b5;
+            border-right: 2px solid #02a6b5;
+          }
+
+          .panel-footer {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            &:before {
+              position: absolute;
+              bottom: 0;
+              left: 0;
+              content: "";
+              width: 10px;
+              height: 10px;
+              border-bottom: 2px solid #02a6b5;
+              border-left: 2px solid #02a6b5;
+            }
+            &:after {
+              position: absolute;
+              bottom: 0;
+              right: 0;
+              content: "";
+              width: 10px;
+              height: 10px;
+              border-bottom: 2px solid #02a6b5;
+              border-right: 2px solid #02a6b5;
+            }
+          }
+
+          h2 {
+            height: 0.6rem;
+            line-height: 0.6rem;
+            text-align: center;
+            color: #fff;
+            font-size: 0.225rem;
+            font-weight: 400;
+            a {
+              margin: 0 0.1875rem;
+              color: #fff;
+              text-decoration: none;
+            }
+          }
+          .chart {
+            height: 45vh;
+          }
+        }
+
+
+
   }
 
 }
