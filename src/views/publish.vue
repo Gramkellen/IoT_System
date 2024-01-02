@@ -46,7 +46,7 @@ export default {
       ],
       connection: {
         protocol: "ws",           //mqtt服务器协议（ws/mqtt）
-        host: "100.78.169.243",   //mqtt服务器主机名或ip地址
+        host: "100.80.222.123",   //mqtt服务器主机名或ip地址
         port: 1883,               //mqtt服务器端口号
         endpoint: "/mqtt",        //mqtt服务器d端点
         clean: true,
@@ -115,7 +115,7 @@ export default {
           this.client.on ("message", (topic, message) => {
             this.receiveNews = this.receiveNews.concat (message);
             console.log (`Received message ${message} from topic ${topic}`);
-            alert(`Received message ${message} from topic ${topic}`);
+            //alert(`Received message ${message} from topic ${topic}`);
           });
         }
       } catch (error) {
@@ -128,14 +128,26 @@ export default {
       this.client.publish(topic, message, { qos }, (error) => {
         if (!error) {
           console.log(`Publish message to topic ${topic} successfully!`);
-          alert(`Published message ${message} to topic ${topic}`);
+          //alert(`Published message ${message} to topic ${topic}`);
         } else {
           console.log(`Publish message to topic ${topic} failed: `, error);
         }
       });
     },
-
-
+    
+    splitJson(str) {
+      //let jsonString = '[' + str.replace(/}{/g, '],[') + ']';
+      //let jsonArray = JSON.parse(jsonString);
+      //return jsonArray.map(JSON.stringify);
+      let arr = str.split('},');
+      //arr.pop();
+      arr = arr.map((s)=>s+'}');
+      //alert(arr[arr.length - 1]);
+      var index = arr.length - 1;
+      arr[index] = arr[index].split('}')[0];
+      arr[index] = arr[index] + '}';
+      return arr;
+    },
     beforeUpload(file) {
       const fileType = file.type
       const allowedTypes = ['text/plain']
@@ -153,11 +165,21 @@ export default {
       const reader = new FileReader()
       reader.onload = () => {
         if (fileType == '.txt') {
-          this.Content = reader.result.replace(/\n/g, '');
+          //this.Content = reader.result.replace(/\n/g, '');
+          //this.Content = reader.result.replace(/\r/g, '');
+          this.Content = reader.result.replace(/\r\n/g, ',');
           this.fileContent = reader.result.replace(/,/g, '\n')
           this.stringContent = JSON.stringify(this.Content);
           /* this.publishMessage(this.selectedTopic, this.Content) */
-          this.publishMessage(this.selectedTopic, this.stringContent)
+          //this.publishMessage(this.selectedTopic, this.stringContent)
+          console.log(this.Content);
+   
+          var str = this.splitJson(this.Content);
+          for(var i=0; i<str.length; i++){
+            this.publishMessage(this.selectedTopic, str[i]);
+          }
+          
+          //this.publishMessage(this.selectedTopic, this.Content)
         } else {
           this.fileContent = ''
         }
